@@ -31,16 +31,19 @@ describe('comparator', function () {
     comparator.$lte(1,1).should.be.true;
     comparator.$lte(1,0).should.be.false;
   });
-  
+
   it('$regex should work with string regex pattern', function () {
     comparator.$regex('hello world', '^world').should.be.false;
-    comparator.$regex('hello world', 'world$').should.be.true;      
+    comparator.$regex('hello world', 'world$').should.be.true;
   });
 
   it('$all should work', function () {
     comparator.$all([1,2],[1,2]).should.be.true;
     comparator.$all([1], [1,2]).should.be.false;
     comparator.$all([1,2,3],[1,2]).should.be.true;
+    comparator.$all(["t1","t2","t3"],["t1"]).should.be.true;
+    comparator.$all(["t1","t2","t3"],[/t1/im,/t2/im]).should.be.true;
+    comparator.$all(["t1","t2","t3"],[/t4/im]).should.be.false;
   });
 
   it('$exists should work', function () {
@@ -80,6 +83,14 @@ describe('comparator', function () {
     comparator.$size('foo', 3).should.be.true;
     comparator.$size({ a: 1}, 1).should.be.false;
     comparator.$size({ length: 3}, 3).should.be.true;
+  });
+
+  it('$regex should work', function () {
+    comparator.$eq("test", /t..t/im).should.be.true;
+    comparator.$eq("test", /test./im).should.be.false;
+    comparator.$not("test", /t..t/im).should.be.false;
+    comparator.$in("test", [/t..t/im]).should.be.true;
+    comparator.$nin("test", [/t..t/im]).should.be.false;
   });
 
   it('$or should work', function () {
