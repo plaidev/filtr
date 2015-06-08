@@ -80,6 +80,22 @@ describe('Query', function () {
         , val = filtr.getPathValue('[1][1]', obj);
       val.should.equal('b');
     });
+
+    it('can get multiple value of embed nested array', function () {
+      var obj = { hello: [{ universe: 'world' }, { universe: ['jp'] }]}
+        , vals = filtr.getPathValues('hello.universe', obj);
+      vals.length.should.equal(2);
+      vals[0].should.equal('world');
+      vals[1].should.equal('jp');
+    });
+
+    it('can get multiple value of embed nested array', function () {
+      var obj = { hello: [{ universe: 'world', child1: [{child2: 1}] }]}
+        , vals = filtr.getPathValues('hello.child1.child2', obj);
+      vals.length.should.equal(1);
+      vals[0].should.equal(1);
+    });
+
   });
 
   describe('setPathValue', function () {
@@ -97,8 +113,9 @@ describe('Query', function () {
 
     it('should allow nested array value to be set', function () {
       var obj = {};
-      filtr.setPathValue('hello.universe[1].filtr', 'galaxy', obj);
-      obj.should.eql({ hello: { universe: [ , { filtr: 'galaxy' } ] }});
+      filtr.setPathValue('hello.universe[0].filtr', 'galaxy', obj);
+      obj.hello.universe[0].filtr.should.eql('galaxy');
+      // obj.should.eql({ hello: { universe: [ { filtr: 'galaxy' } ] }});
     });
 
     it('should allow value to be REset in simple object', function () {
@@ -165,6 +182,21 @@ describe('Query', function () {
       Q.test({ hello: false, universe: true }, { type: 'single' }).should.be.true;
       Q.test({ hello: false, universe: false }, { type: 'single' }).should.be.false;
     });
+
+    it('should filter embeded array', function () {
+      var query = { 'hello.universe.parent': 'filtr' }
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({ hello: {universe: [{ parent: 'filtr'}]} }, { type: 'single' }).should.be.true;
+    });
+
+    it('should filter embeded array', function () {
+      var query = { 'hello.universe.parent': 'xxx' }
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({ hello: {universe: [{ parent: 'filtr'}]} }, { type: 'single' }).should.be.false;
+    });
+
   });
 
   // TODO: All nesting options.
