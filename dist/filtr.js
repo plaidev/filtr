@@ -25,6 +25,12 @@ var traversable = {
   , $nor: true
 }
 
+var arrayOperators = {
+  $all: true,
+  $elemMatch: true,
+  $size: true
+}
+
 /*!
  * helper function for setting defaults
  */
@@ -79,6 +85,31 @@ Filtr.version = '0.3.0';
  * Object containing all query compators.
  */
 
+_eq = function (a, b) {
+  if (!(b instanceof RegExp))
+    return a == b;
+  return b.test(a);
+}
+
+_in = function (a, b) {
+  if (b.length == 0)
+    return true
+  return b.some(function(v){
+    return _eq(a, v);
+  })
+}
+
+_all = function (a, b) {
+  if (b.length == 0)
+    return true
+  return b.every(function(bb){
+    return a.some(function(aa){
+      return _eq(aa, bb);
+    })
+  })
+}
+
+
 Filtr.comparators = {
   $gt: function (a, b) {
     return a > b;
@@ -95,16 +126,13 @@ Filtr.comparators = {
   , $lte: function (a, b) {
     return a <= b;
   }
-  
+
   , $regex: function(a, b) {
     return typeof(a) === 'string' && (new RegExp(b)).test(a)
   }
 
   , $all: function (a, b) {
-    for (var i = 0; i < b.length; i++) {
-      if (!~a.indexOf(b[i])) return false;
-    }
-    return true;
+    return _all(a, b);
   }
 
   , $exists: function (a, b) {
@@ -116,19 +144,23 @@ Filtr.comparators = {
   }
 
   , $eq: function (a, b) {
-    return a == b;
+    return _eq(a, b);
   }
 
   , $ne: function (a, b) {
-    return a != b;
+    return !_eq(a, b);
+  }
+
+  , $not: function (a, b) {
+    return !_eq(a, b);
   }
 
   , $in: function (a, b) {
-    return ~b.indexOf(a) ? true : false;
+    return _in(a, b);
   }
 
   , $nin: function (a, b) {
-    return ~b.indexOf(a) ? false : true;
+    return !_in(a, b);
   }
 
   , $size: function (a, b) {
@@ -194,6 +226,11 @@ Filtr.comparators = {
 Filtr.getPathValue = function (path, obj) {
   var parsed = parsePath(path);
   return getPathValue(parsed, obj);
+};
+
+Filtr.getPathValues = function (path, obj) {
+  var parsed = parsePath(path);
+  return getPathValues(parsed, obj);
 };
 
 /**
@@ -287,6 +324,56 @@ function getPathValue (parsed, obj) {
     }
   }
   return res;
+};
+
+
+function getPathValues (parsed, obj) {
+
+  if (obj == null)
+    return [];
+
+  var part = parsed[0];
+
+  var p = false;
+  if ('undefined' !== typeof part.p)
+    p = part.p;
+  else if ('undefined' !== typeof part.i)
+    p = part.i;
+
+  var remain_parsed = parsed.slice(1, parsed.length);
+
+  if(!Array.isArray(obj)){
+    var res = obj[p];
+
+    if ( (parsed.length == 1) ) {
+      if (res != null) {
+        if(Array.isArray(res))
+          return res
+        return [res]
+      }
+      return []
+    }
+
+    if (res != null) {
+      var res = getPathValues(remain_parsed, res);
+      return res;
+    }
+    return []
+
+  } else {
+    var arr = [];
+    obj.forEach(function(_obj){
+      if (_obj != null) {
+        var res = getPathValues(parsed, _obj);
+        res.forEach(function(_res){
+          arr.push(_res);
+        });
+      }
+    });
+    return arr;
+  }
+
+  return [];
 };
 
 /**
@@ -411,7 +498,8 @@ function parseQuery (query) {
     } else {
       if ('string' == typeof params
       || 'number' == typeof params
-      || 'boolean' == typeof params) {
+      || 'boolean' == typeof params
+      || params instanceof RegExp) {
         qry.test = parseFilter({ $eq: params });
         qry.path = parsePath(cmd);
       } else {
@@ -456,7 +544,8 @@ function parseFilter (query) {
       }
     }
     stack.push({
-        fn: fn
+        test: test
+      , fn: fn
       , params: traverse ? st : params
       , traverse: traverse
     });
@@ -480,33 +569,56 @@ function parseFilter (query) {
  */
 
 function testFilter (val, stack) {
-  var pass = true;
   for (var si = 0, sl = stack.length; si < sl; si++) {
     var filter = stack[si]
-      , el = (filter.path) ? getPathValue(filter.path, val) : val;
-    if (!_testFilter(el, filter.test)) pass = false;
+    var els = (filter.path) ? getPathValues(filter.path, val) : val;
+
+    if (!Array.isArray(els)) els = [els];
+
+    if (!_testFilter(els, filter.test)) return false;
   }
-  return pass;
+  return true;
 };
 
-function _testFilter (val, stack) {
-  var res = true;
+function _testFilter (els, stack) {
+
   for (var i = 0; i < stack.length; i++) {
+
     var test = stack[i]
       , params = test.params;
+
     if (test.traverse) {
       var p = [];
       for (var ii = 0; ii < params.length; ii++)
-        p.push(testFilter(val, params[ii]));
+        p.push(testFilter(els, params[ii]));
       params = p;
     }
-    if (test.fn.length == 1) {
-      if (!test.fn(params)) res = false;
-    } else {
-      if (!test.fn(val, params)) res = false;
+
+    if (els.length == 0) {
+      if (!test.fn(undefined, params)) return false;
+      break;
+    }
+
+    if (test.fn != undefined) {
+      if (test.fn.length == 1) {
+        if (!test.fn(params)){
+          return false;
+        }
+      } else {
+        if (arrayOperators[test.test]){
+          if (!test.fn(els, params))
+            return false;
+        } else {
+          var bl = false;
+          for (var j = 0; j < els.length; j++)
+            if (test.fn(els[j], params))
+              bl = true
+          if (!bl) return false;
+        }
+      }
     }
   }
-  return res;
+  return true;
 };
 
 
