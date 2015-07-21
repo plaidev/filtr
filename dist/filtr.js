@@ -88,6 +88,8 @@ Filtr.version = '0.3.0';
 _eq = function (a, b) {
   if (!(b instanceof RegExp))
     return a == b;
+  if (a == null)
+    return false
   return b.test(a);
 }
 
