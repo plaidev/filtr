@@ -71,11 +71,15 @@ describe('comparator', function () {
   it('$in should work', function () {
     comparator.$in(1,[0,1,2]).should.be.true;
     comparator.$in(4,[0,1,2]).should.be.false;
+    comparator.$in('test',['test1', 'test2', 'test3']).should.be.false;
+    comparator.$in('test1',['test1', 'test2', 'test3']).should.be.true;
   });
 
   it('$nin should work', function () {
     comparator.$nin(1,[0,1,2]).should.be.false;
     comparator.$nin(4,[0,1,2]).should.be.true;
+    comparator.$nin('test',['test1', 'test2', 'test3']).should.be.true;
+    comparator.$nin('test1',['test1', 'test2', 'test3']).should.be.false;
   });
 
   it('$size should work', function () {
@@ -89,8 +93,27 @@ describe('comparator', function () {
     comparator.$eq("test", /t..t/im).should.be.true;
     comparator.$eq("test", /test./im).should.be.false;
     comparator.$not("test", /t..t/im).should.be.false;
-    comparator.$in("test", [/t..t/im]).should.be.true;
-    comparator.$nin("test", [/t..t/im]).should.be.false;
+
+    comparator.$in('abc', [/t..t/im]).should.be.false;
+    comparator.$nin('abc', [/t..t/im]).should.be.true;
+    comparator.$in('abc', [/t..t/im, /a.c/im]).should.be.true;
+    comparator.$nin('abc', [/t..t/im, /a.c/im]).should.be.false;
+
+    comparator.$in(['abc', 'xxx'], [/t..t/im]).should.be.false;
+    comparator.$nin(['abc', 'xxx'], [/t..t/im]).should.be.true;
+    comparator.$in(['abc', 'xxx'], [/t..t/im, /a.c/im]).should.be.true;
+    comparator.$nin(['abc', 'xxx'], [/t..t/im, /a.c/im]).should.be.false;
+
+    comparator.$eq(["test"], /t..t/im).should.be.true;
+    comparator.$eq(["test"], /test./im).should.be.false;
+    comparator.$not(["test"], /t..t/im).should.be.false;
+    comparator.$not(["test"], /test./im).should.be.true;
+
+    comparator.$in(['abc', 'xxx'], [/^a.c$/im]).should.be.true;
+    comparator.$nin(['abc', 'xxx'], [/^a.c$/im]).should.be.false;
+    comparator.$in('abc', [/^a.c$/im]).should.be.true;
+    comparator.$nin('abc', [/^a.c$/im]).should.be.false;
+
   });
 
   it('$or should work', function () {
