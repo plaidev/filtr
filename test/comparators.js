@@ -71,11 +71,15 @@ describe('comparator', function () {
   it('$in should work', function () {
     comparator.$in(1,[0,1,2]).should.be.true;
     comparator.$in(4,[0,1,2]).should.be.false;
+    comparator.$in('test',['test1', 'test2', 'test3']).should.be.false;
+    comparator.$in('test1',['test1', 'test2', 'test3']).should.be.true;
   });
 
   it('$nin should work', function () {
     comparator.$nin(1,[0,1,2]).should.be.false;
     comparator.$nin(4,[0,1,2]).should.be.true;
+    comparator.$nin('test',['test1', 'test2', 'test3']).should.be.true;
+    comparator.$nin('test1',['test1', 'test2', 'test3']).should.be.false;
   });
 
   it('$size should work', function () {
@@ -89,8 +93,10 @@ describe('comparator', function () {
     comparator.$eq("test", /t..t/im).should.be.true;
     comparator.$eq("test", /test./im).should.be.false;
     comparator.$not("test", /t..t/im).should.be.false;
-    comparator.$in("test", [/t..t/im]).should.be.true;
-    comparator.$nin("test", [/t..t/im]).should.be.false;
+    comparator.$in(/t..t/im, ['abc']).should.be.false;
+    comparator.$in(/t..t/im, ['test', 'abc']).should.be.true;
+    comparator.$nin(/t..t/im, ['abc']).should.be.true;
+    comparator.$nin(/t..t/im, ['test', 'abc']).should.be.false;
   });
 
   it('$or should work', function () {
