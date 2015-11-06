@@ -238,6 +238,20 @@ describe('Query', function () {
       Q.test({ 'arrayField': ['abc', 'def', 'ghi'] }, { type: 'single' }).should.be.false;
     });
 
+    it('should parse an array access query', function () {
+      var query = { 'arrayField.0': 'abc' }
+          , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({ 'arrayField': ['abc', 'def', 'ghi'] }, { type: 'single' }).should.be.true;
+      Q.test({ 'arrayField': ['def', 'abc', 'ghi'] }, { type: 'single' }).should.be.false;
+
+      var query2 = { 'arrayField.1': 'abc' }
+          , Q2 = filtr(query2);
+      Q2.stack.should.have.length(1);
+      Q2.test({ 'arrayField': ['abc', 'def', 'ghi'] }, { type: 'single' }).should.be.false;
+      Q2.test({ 'arrayField': ['def', 'abc', 'ghi'] }, { type: 'single' }).should.be.true;
+    });
+
   });
 
   // TODO: All nesting options.
