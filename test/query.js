@@ -252,6 +252,22 @@ describe('Query', function () {
       Q2.test({ 'arrayField': ['def', 'abc', 'ghi'] }, { type: 'single' }).should.be.true;
     });
 
+    it('should $ne work', function () {
+      var query = {'sets': {$ne: 'Chrome'}}
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({sets: ['Chrome', 'abc']}, {type: 'single'}).should.be.false;
+      Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.true;
+    });
+
+    it('should $eq work', function () {
+      var query = {'sets': {$eq: 'Chrome'}}
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({sets: ['Chrome', 'abc']}, {type: 'single'}).should.be.true;
+      Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.false;
+    });
+
   });
 
   // TODO: All nesting options.
