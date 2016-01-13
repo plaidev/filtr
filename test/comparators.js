@@ -73,6 +73,18 @@ describe('comparator', function () {
   it('$ne should work', function () {
     comparator.$ne(12,12).should.be.false;
     comparator.$ne(12,11).should.be.true;
+
+    comparator.$ne([12],12).should.be.false;
+    comparator.$ne([12],11).should.be.true;
+
+    comparator.$ne([1, 12],12).should.be.false;
+    comparator.$ne([1, 12],11).should.be.true;
+
+    comparator.$ne(['abc', 'def'],'abc').should.be.false;
+    comparator.$ne(['abc', 'def'],'xxx').should.be.true;
+
+    comparator.$ne([1,2],[1,2]).should.be.false;
+    comparator.$ne([1,2],[2,1]).should.be.true;
   });
 
   it('$in should work', function () {
@@ -103,6 +115,8 @@ describe('comparator', function () {
     comparator.$eq("test", /test./im).should.be.false;
     comparator.$not("test", /t..t/im).should.be.false;
     comparator.$in("test", [/t..t/im]).should.be.true;
+    comparator.$in("abc", [/t..t/im, /ab*c/im]).should.be.true;
+    comparator.$in("false", [/t..t/im, /abc/im]).should.be.false;
     comparator.$nin("test", [/t..t/im]).should.be.false;
   });
 
