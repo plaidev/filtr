@@ -66,7 +66,7 @@ describe('comparator', function () {
 
   it('$exists should work', function () {
     var a = undefined
-      , b = {c: 'hi', z: 0};
+      , b = {c: 'hi', z: 0, n: null};
     comparator.$exists(a, false).should.be.true;
     comparator.$exists(a, true).should.be.false;
     comparator.$exists(b, true).should.be.true;
@@ -75,6 +75,8 @@ describe('comparator', function () {
     comparator.$exists('hi', true).should.be.true;
     comparator.$exists(b.z, true).should.be.true;
     comparator.$exists(b.z, false).should.be.false;
+    comparator.$exists(b.n, true).should.be.true;
+    comparator.$exists(b.n, false).should.be.false;
   });
 
   it('$mod should work', function () {
