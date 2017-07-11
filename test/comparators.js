@@ -24,12 +24,23 @@ describe('comparator', function () {
   it('$lt should work', function () {
     comparator.$lt(0,1).should.be.true;
     comparator.$lt(1,0).should.be.false;
+
+    comparator.$lt(0, 2).should.be.true;
+    comparator.$lt(1, 2).should.be.true;
+    comparator.$lt(2, 2).should.be.false;
+    comparator.$lt(3, 2).should.be.false;
   });
 
   it('$lte should work', function () {
     comparator.$lte(0,1).should.be.true;
     comparator.$lte(1,1).should.be.true;
     comparator.$lte(1,0).should.be.false;
+
+    comparator.$lte(0, 2).should.be.true;
+    comparator.$lte(1, 2).should.be.true;
+    comparator.$lte(2, 2).should.be.true;
+    comparator.$lte(3, 2).should.be.false;
+
   });
 
   it('$regex should work with string regex pattern', function () {
@@ -55,13 +66,15 @@ describe('comparator', function () {
 
   it('$exists should work', function () {
     var a = undefined
-      , b = {c: 'hi'};
+      , b = {c: 'hi', z: 0};
     comparator.$exists(a, false).should.be.true;
     comparator.$exists(a, true).should.be.false;
     comparator.$exists(b, true).should.be.true;
     comparator.$exists(b.c, false).should.be.false;
     comparator.$exists(b.a, false).should.be.true;
     comparator.$exists('hi', true).should.be.true;
+    comparator.$exists(b.z, true).should.be.true;
+    comparator.$exists(b.z, false).should.be.false;
   });
 
   it('$mod should work', function () {
