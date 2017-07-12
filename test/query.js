@@ -198,8 +198,10 @@ describe('Query', function () {
         , Q = filtr(query);
       Q.stack.should.have.length(1);
       Q.test({ hello: 0 }, { type: 'single' }).should.be.false;
-      Q.test({}, { type: 'single' }).should.be.false;
       Q.test({ hello: null }, { type: 'single' }).should.be.true;
+
+      // https://docs.mongodb.com/v3.2/tutorial/query-for-null-fields/
+      Q.test({}, { type: 'single' }).should.be.true;
     });
 
     it('should assume $eq if no comparator provided - boolean', function () {
