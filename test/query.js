@@ -16,6 +16,17 @@ describe('Query', function () {
     Q.test(11, { type: 'single' }).should.be.false;
   });
 
+  it('should parse a single query 2', function () {
+    var query = { $lt: 2 }
+      , Q = filtr(query);
+    Q.stack.should.have.length(1);
+    Q.test(0, { type: 'single' }).should.be.true;
+    Q.test(1, { type: 'single' }).should.be.true;
+    Q.test(2, { type: 'single' }).should.be.false;
+    Q.test(3, { type: 'single' }).should.be.false;
+  });
+
+
   it('should parse a lengthed query', function () {
     var query = { $lt: 10, $gt: 5 }
       , Q = filtr(query);
@@ -159,11 +170,38 @@ describe('Query', function () {
       Q.test({ hello: 'universe' }, { type: 'single' }).should.be.true;
     });
 
+    it('should assume $eq if no comparator provided - string("null")', function () {
+      var query = { 'hello': 'null' }
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({ hello: 'null' }, { type: 'single' }).should.be.true;
+    });
+
     it('should assume $eq if no comparator provided - number', function () {
       var query = { 'hello': 42 }
         , Q = filtr(query);
       Q.stack.should.have.length(1);
       Q.test({ hello: 42 }, { type: 'single' }).should.be.true;
+    });
+
+    it('should assume $eq if no comparator provided - number(0)', function () {
+      var query = { 'hello': 0 }
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({ hello: 0 }, { type: 'single' }).should.be.true;
+      Q.test({}, { type: 'single' }).should.be.false;
+      Q.test({ hello: null }, { type: 'single' }).should.be.false;
+    });
+
+    it('should assume $eq if no comparator provided - null', function () {
+      var query = { 'hello': null }
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({ hello: 0 }, { type: 'single' }).should.be.false;
+      Q.test({ hello: null }, { type: 'single' }).should.be.true;
+
+      // https://docs.mongodb.com/v3.2/tutorial/query-for-null-fields/
+      Q.test({}, { type: 'single' }).should.be.true;
     });
 
     it('should assume $eq if no comparator provided - boolean', function () {
@@ -267,6 +305,31 @@ describe('Query', function () {
       Q.test({sets: ['Chrome', 'abc']}, {type: 'single'}).should.be.true;
       Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.false;
     });
+
+    it('should regexp $ne work', function () {
+      var query = {'sets': {$ne: /Chrome/}}
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({sets: ['Chrome', 'abc']}, {type: 'single'}).should.be.false;
+      Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.true;
+    });
+
+    it('should regexp $eq work', function () {
+      var query = {'sets': {$eq: /Chrome/}}
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({sets: ['Chrome', 'abc']}, {type: 'single'}).should.be.true;
+      Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.false;
+    });
+
+    it('should regexp $eq work', function () {
+      var query = {'sets': /Chrome/}
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({sets: ['Chrome', 'abc']}, {type: 'single'}).should.be.true;
+      Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.false;
+    });
+
 
   });
 
