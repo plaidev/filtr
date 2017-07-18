@@ -330,6 +330,12 @@ describe('Query', function () {
       Q.test({sets: ['Firefox', 'abc']}, {type: 'single'}).should.be.false;
     });
 
+    it('should regexp $eq work appropriately', function () {
+      var query = {'test': /f/}
+        , Q = filtr(query);
+      Q.stack.should.have.length(1);
+      Q.test({}, {type: 'single'}).should.be.false;
+    });
 
   });
 
