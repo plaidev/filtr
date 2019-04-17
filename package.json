@@ -2,7 +2,7 @@
   "author": "Jake Luer <jake@alogicalparadox.com>",
   "name": "filtr",
   "description": "Array filtering for node.js and the browser inspired by MongoDB.",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "repository": {
     "type": "git",
     "url": "git://github.com/logicalparadox/filtr.git"
@@ -16,9 +16,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-      "mocha": "*"
-    , "chai": "*"
-    , "folio": "0.2.x"
+    "mocha": "*",
+    "chai": "*",
+    "folio": "0.2.x"
   },
   "optionalDependencies": {}
 }
