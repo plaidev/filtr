@@ -164,13 +164,13 @@ describe('comparator', function () {
 
   it('$geoWithin should work', function () {
     // GINZA SIX (1000m以内)
-    var test = {'$centerSphere': [[35.669645,139.764236], 1000]};
+    var test = {'$centerSphere': [[139.764236, 35.669645], 1000]};
                    
     // 新橋駅 (約650m)
-    comparator.$geoWithin([35.666346,139.758276], test).should.be.true;
+    comparator.$geoWithin([139.758276, 35.666346], test).should.be.true;
     // 京橋駅 (約950m)
-    comparator.$geoWithin([35.676722,139.770104], test).should.be.true;
+    comparator.$geoWithin([139.770104, 35.676722], test).should.be.true;
     // 東京駅 (約1300m)
-    comparator.$geoWithin([35.681149,139.767218], test).should.be.false;
+    comparator.$geoWithin([139.767218, 35.681149], test).should.be.false;
   });
 });
